@@ -11,7 +11,16 @@ def main():
     )
     args = parser.parse_args()
 
-    scan_path(args.path)
+    matches = scan_path(args.path)
+    _report(matches)    
+
+def _report(matches):
+    if matches:
+        print("\n🚨 Potential quantum-vulnerable crypto usage found:")
+        for file_path, line_number, line in matches:
+            print(f"{file_path}:{line_number}: {line}")
+    else:
+        print("\n✅ No crypto-related imports detected.")
 
 if __name__ == "__main__":
     main()

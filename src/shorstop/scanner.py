@@ -1,25 +1,27 @@
 # scanner.py
 import os
+from typing import List, Tuple
 
-def scan_path(path: str):
+def scan_path(path: str) -> List[Tuple[str, int, str]]:
     print(f"Scanning path: {path}")
     
     if not os.path.exists(path):
         print(f"\n❌ Invalid path: {path}. Please provide a valid file or directory.")
-        return
+        return []
         
     matches = []
     
     if os.path.isfile(path):
         _scan_file(matches, path)
-        _report(matches)
-        return
+        return matches
     elif os.path.isdir(path):
         for root, _, files in os.walk(path):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
                 _scan_file(matches, file_path)
-        _report(matches)
+        return matches
+    
+    return []
 
 def _scan_file(matches, file_path):
     if file_path.endswith((".py", ".js", ".cs", ".java")):
@@ -27,11 +29,3 @@ def _scan_file(matches, file_path):
             for line_number, line in enumerate(file_stream, 1):
                 if any(keyword in line for keyword in ["import rsa", "Crypto.PublicKey", "System.Security.Cryptography"]):
                     matches.append((file_path, line_number, line.strip()))
-
-def _report(matches):
-    if matches:
-        print("\n🚨 Potential quantum-vulnerable crypto usage found:")
-        for file_path, line_number, line in matches:
-            print(f"{file_path}:{line_number}: {line}")
-    else:
-        print("\n✅ No crypto-related imports detected.")
