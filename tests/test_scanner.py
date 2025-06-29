@@ -1,7 +1,7 @@
 #test_scanner.py
 import os
 import unittest
-from src.shorstop.scanner import scan_path
+from src.shorstop.scanner import InvalidPathError, scan_path
 
 class TestShorstopScanner(unittest.TestCase):
     def setUp(self):
@@ -14,8 +14,8 @@ class TestShorstopScanner(unittest.TestCase):
         self.assertTrue(any("Crypto.PublicKey" in line for _, _, line in matches))
 
     def test_nonexistent_path(self):
-        matches = scan_path("nonexistent_path.py")
-        self.assertEqual(matches, [])
+        with self.assertRaises(InvalidPathError):
+            scan_path("nonexistent_path.py")
 
 if __name__ == '__main__':
     unittest.main()

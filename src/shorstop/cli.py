@@ -1,18 +1,23 @@
-# cli.py
 import argparse
-from scanner import scan_path
+import sys
+from src.shorstop.scanner import scan_path, InvalidPathError
 
 def main():
     parser = argparse.ArgumentParser(
-        description="🔍 Shorstop - Scan for quantum-vulnerable crypto in codebases."
+        description="🔍 Shorstop - Scan for quantum-vulnerable crypto in Python codebases."
     )
     parser.add_argument(
-        "path", type=str, help="Path to the project directory to scan."
+        "path", type=str, help="Path to the file or directory to scan."
     )
     args = parser.parse_args()
 
-    matches = scan_path(args.path)
-    _report(matches)    
+    try:
+        matches = scan_path(args.path)
+    except InvalidPathError as e:
+        print(f"❌ {e}")
+        sys.exit(1)
+
+    _report(matches)
 
 def _report(matches):
     if matches:
