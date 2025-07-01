@@ -1,9 +1,8 @@
-#test_scanner.py
 import os
 import unittest
 from src.shorstop.scanner import InvalidPathError, scan_path
 
-class TestShorstopScanner(unittest.TestCase):
+class TestScanner(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.dirname(__file__)
         self.sample_file = os.path.join(self.test_dir, "..", "samples", "weak_rsa_example.py")
@@ -16,6 +15,18 @@ class TestShorstopScanner(unittest.TestCase):
     def test_nonexistent_path(self):
         with self.assertRaises(InvalidPathError):
             scan_path("nonexistent_path.py")
+
+    def test_detects_crypto_usage(self):
+        test_code = "from Crypto.PublicKey import RSA\nkey = RSA.generate(2048)\n"
+        test_file = os.path.join(self.test_dir, "temp_test_crypto_usage.py")
+        with open(test_file, "w") as f:
+            f.write(test_code)
+
+        try:
+            matches = scan_path(test_file)
+            self.assertTrue(any("crypto usage: RSA.generate" in m[2] for m in matches))
+        finally:
+            os.remove(test_file)
 
 if __name__ == '__main__':
     unittest.main()

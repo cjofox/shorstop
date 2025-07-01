@@ -1,6 +1,7 @@
 import os
 import ast
-from typing import List, Tuple, Union
+from typing import List, Tuple
+from .crypto_usage_visitor import CryptoUsageVisitor
 
 CRYPTO_IMPORTS = {
     "rsa",
@@ -49,6 +50,11 @@ def _scan_file(matches: List[Tuple[str, int, str]], file_path: str) -> None:
                 if module and _is_crypto_import(module):
                     imported_names = ", ".join(alias.name for alias in node.names)
                     matches.append((file_path, node.lineno, f"from {module} import {imported_names}"))
+
+        visitor = CryptoUsageVisitor()
+        visitor.visit(tree)
+        for lineno, desc in visitor.matches:
+            matches.append((file_path, lineno, f"crypto usage: {desc}"))
 
     except SyntaxError as e:
         matches.append((file_path, e.lineno or 0, f"⚠️ Skipped (SyntaxError): {e.msg}"))
