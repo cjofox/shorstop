@@ -1,5 +1,6 @@
 import os
 import ast
+import sys
 from typing import List, Tuple
 from .crypto_usage_visitor import CryptoUsageVisitor
 
@@ -61,3 +62,11 @@ def _scan_file(matches: List[Tuple[str, int, str]], file_path: str) -> None:
 
 def _is_crypto_import(module_name: str) -> bool:
     return any(module_name.startswith(crypto) for crypto in CRYPTO_IMPORTS)
+
+def scan_file_or_directory(path: str) -> List[Tuple[str, int, str]]:
+    try:
+        matches = scan_path(path)
+    except InvalidPathError as e:
+        print(f"❌ {e}")
+        sys.exit(1)
+    return matches

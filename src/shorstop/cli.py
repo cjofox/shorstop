@@ -1,8 +1,7 @@
 import argparse
-import sys
-from typing import List, Tuple
-from src.shorstop.formatter import format_matches
-from .scanner import scan_path, InvalidPathError
+
+from .scanner import scan_file_or_directory
+from .report import report
 
 def main():
     parser = argparse.ArgumentParser(
@@ -18,29 +17,7 @@ def main():
 
     matches = scan_file_or_directory(args.path)
 
-    _report(matches, args.output)
+    report(matches, args.output)
 
-def scan_file_or_directory(path: str):
-    try:
-        matches = scan_path(path)
-    except InvalidPathError as e:
-        print(f"❌ {e}")
-        sys.exit(1)
-    return matches
-
-def _report(matches: List[Tuple[str, int, str]], output_file: str = ""):
-    if not matches:
-        print("✅ No crypto-related imports detected.")
-        return
-    
-    output = format_matches(matches)
-    if  output_file and output_file != "":
-        with open(output_file, "w", encoding="utf-8") as file_stream:
-            file_stream.write(output)
-        print(f"✅ Results written to {output_file}")
-    else:
-        print()
-        print(format_matches(matches))
-    
 if __name__ == "__main__":
     main()
