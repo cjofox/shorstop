@@ -43,18 +43,18 @@ def _scan_file(matches: List[Tuple[str, int, str]], file_path: str) -> None:
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     if _is_crypto_import(alias.name):
-                        matches.append((file_path, node.lineno, f"import {alias.name}"))
+                        matches.append((file_path, node.lineno, f"import: {alias.name}"))
 
             elif isinstance(node, ast.ImportFrom):
                 module = node.module
                 if module and _is_crypto_import(module):
                     imported_names = ", ".join(alias.name for alias in node.names)
-                    matches.append((file_path, node.lineno, f"from {module} import {imported_names}"))
+                    matches.append((file_path, node.lineno, f"import: from {module} import {imported_names}"))
 
         visitor = CryptoUsageVisitor()
         visitor.visit(tree)
         for lineno, desc in visitor.matches:
-            matches.append((file_path, lineno, f"crypto usage: {desc}"))
+            matches.append((file_path, lineno, f"usage: {desc}"))
 
     except SyntaxError as e:
         matches.append((file_path, e.lineno or 0, f"⚠️ Skipped (SyntaxError): {e.msg}"))

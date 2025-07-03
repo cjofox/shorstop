@@ -10,7 +10,7 @@ class TestScanner(unittest.TestCase):
     def test_detects_weak_rsa_usage(self):
         matches = scan_path(self.sample_file)
         self.assertTrue(matches, "Expected crypto-related imports to be detected.")
-        self.assertTrue(any("Crypto.PublicKey" in line for _, _, line in matches))
+        self.assertTrue(any("import:" in line and "Crypto.PublicKey" in line for _, _, line in matches))
 
     def test_nonexistent_path(self):
         with self.assertRaises(InvalidPathError):
@@ -24,7 +24,7 @@ class TestScanner(unittest.TestCase):
 
         try:
             matches = scan_path(test_file)
-            self.assertTrue(any("crypto usage: RSA.generate" in m[2] for m in matches))
+            self.assertTrue(any("usage: RSA.generate" in m[2] for m in matches))
         finally:
             os.remove(test_file)
 
