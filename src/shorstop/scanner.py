@@ -3,12 +3,20 @@ import ast
 import sys
 from typing import List, Tuple
 from .crypto_usage_visitor import CryptoUsageVisitor
+from .quantum_analyzer import analyze_quantum_vulnerabilities, VulnerabilityLevel
 
 CRYPTO_IMPORTS = {
     "rsa",
     "Crypto.PublicKey",
     "Crypto.PublicKey.RSA",
-    "Crypto.PublicKey.ECC",
+    "Crypto.PublicKey.ECC", 
+    "Crypto.PublicKey.DSA",
+    "Crypto.Cipher",
+    "Crypto.Hash",
+    "cryptography",
+    "hashlib",
+    "ecdsa",
+    "pycryptodome",
 }
 
 # Custom exception for invalid paths
@@ -56,6 +64,19 @@ def _scan_file(matches: List[Tuple[str, int, str]], file_path: str) -> None:
         visitor.visit(tree)
         for lineno, desc in visitor.matches:
             matches.append((file_path, lineno, f"usage: {desc}"))
+        
+        # Analyze for quantum vulnerabilities
+        vulnerabilities = analyze_quantum_vulnerabilities(tree)
+        for vuln in vulnerabilities:
+            severity_icon = {
+                VulnerabilityLevel.LOW: "🔸",
+                VulnerabilityLevel.MEDIUM: "🔶", 
+                VulnerabilityLevel.HIGH: "🔺",
+                VulnerabilityLevel.CRITICAL: "🚨"
+            }.get(vuln.level, "⚠️")
+            
+            vuln_desc = f"quantum-vulnerable: {severity_icon} {vuln.description} | Suggestion: {vuln.suggestion}"
+            matches.append((file_path, vuln.line_no, vuln_desc))
 
     except SyntaxError as e:
         matches.append((file_path, e.lineno or 0, f"⚠️ Skipped (SyntaxError): {e.msg}"))
